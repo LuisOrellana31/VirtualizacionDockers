@@ -1,0 +1,61 @@
+version: '3'
+services:
+          
+    postgres:
+        image: postgres:latest
+        container_name: post_compose
+        ports:
+          - "5432:5432"
+        environment:
+            - LC_ALL=C.UTF-8
+            - POSTGRES_DB=luis
+            - POSTGRES_USER=luis
+            - POSTGRES_PASSWORD=luis
+            - POSTGRES_PORT=5432
+        volumes:
+            - $PWD/lluchis/:/var/lib/postgresql/data
+    nginx:
+        image: ngiximage
+        container_name: ng_compose
+        build: ./nginx/config
+        ports: 
+            - 9890:80
+
+    wildfly:
+        image: wildfly
+        container_name: wild_compose
+        build: .
+        ports:
+            - "8080:8080"
+            - "9990:9990"
+        environment:
+            - DB_HOST=postgres
+            - DB_PORT=5432
+            - DB_NAME=luis
+            - DB_USER=luis
+            - DB_PASS=luis
+            - DS_NAME=luisDS
+            - JNDI_NAME=java:jboss/datasources/sistemaGaratias
+        depends_on:
+            - postgres
+            - nginx
+           
+        volumes:
+            - jboss-conf:/opt/jboss/wildfly/standalone/configuration
+            
+    pgAdmin:
+        image: dpage/pgadmin4:latest
+        container_name: pgAdmin
+        ports:
+            - "5555:80"
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=lorellanap@est.ups.edu.ec
+            - PGADMIN_DEFAULT_PASSWORD=Patito.123@456
+        depends_on:
+            - postgres
+        volumes:
+            - volumePG_Admin:/var/lib/pgadmin
+
+volumes:
+    jboss-conf: {}
+    volumePG_Admin:
